@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Binary Arithmetic Calculator</title>
+  <style>
+    :root {
+      --bg-color: #0d1117;
+      --card-bg: #161b22;
+      --card-border: #30363d;
+      --text-main: #c9d1d9;
+      --text-bright: #f0f6fc;
+      --accent: #58a6ff;
+      --accent-hover: #1f6feb;
+      --success: #3fb950;
+      --warning: #d29922;
+      --danger: #f85149;
+      --code-bg: #0b0f14;
+      --font-mono: "Fira Code", Consolas, "Courier New", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 820px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    header h1 {
+      color: var(--text-bright);
+      font-size: 2.2rem;
+      margin-bottom: 8px;
+    }
+
+    header p {
+      color: #8b949e;
+      font-size: 1rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+
+    label {
+      font-weight: 600;
+      color: var(--text-bright);
+      font-size: 0.95rem;
+    }
+
+    .dec-badge {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      background: #21262d;
+      border: 1px solid var(--card-border);
+      color: var(--accent);
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      background: var(--code-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-bright);
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      padding: 10px 14px;
+      border-radius: 8px;
+      letter-spacing: 1px;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2);
+    }
+
+    .quick-btn {
+      background: #21262d;
+      border: 1px solid var(--card-border);
+      color: var(--text-bright);
+      font-family: var(--font-mono);
+      font-weight: 600;
+      padding: 0 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .quick-btn:hover {
+      background: #30363d;
+    }
+
+    .ops-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .op-btn {
+      background: #21262d;
+      border: 1px solid var(--card-border);
+      color: var(--text-bright);
+      font-size: 1.1rem;
+      font-weight: 700;
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s ease;
+    }
+
+    .op-btn small {
+      font-size: 0.75rem;
+      font-weight: 400;
+      color: #8b949e;
+    }
+
+    .op-btn.active, .op-btn:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #ffffff;
+    }
+
+    .op-btn.active small, .op-btn:hover small {
+      color: #e6edf3;
+    }
+
+    .calc-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-calc {
+      flex: 2;
+      background: var(--success);
+      color: #ffffff;
+      border: none;
+      font-weight: 600;
+      font-size: 1rem;
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn-calc:hover {
+      opacity: 0.9;
+    }
+
+    .btn-clear {
+      flex: 1;
+      background: #21262d;
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      font-weight: 600;
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .btn-clear:hover {
+      background: #30363d;
+      color: var(--danger);
+    }
+
+    .results-card {
+      display: none;
+    }
+
+    .res-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 12px;
+    }
+
+    .res-header h2 {
+      font-size: 1.3rem;
+      color: var(--text-bright);
+    }
+
+    .res-main {
+      background: var(--code-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 16px;
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      margin-bottom: 16px;
+      color: var(--text-bright);
+      overflow-x: auto;
+      white-space: pre;
+    }
+
+    .steps-section h3 {
+      font-size: 1rem;
+      margin-bottom: 10px;
+      color: var(--accent);
+    }
+
+    .steps-list {
+      list-style-type: none;
+      background: var(--code-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 12px;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      max-height: 240px;
+      overflow-y: auto;
+    }
+
+    .steps-list li {
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(48, 54, 61, 0.4);
+    }
+
+    .steps-list li:last-child {
+      border-bottom: none;
+    }
+
+    .error-box {
+      display: none;
+      background: rgba(248, 81, 73, 0.15);
+      border: 1px solid var(--danger);
+      color: var(--danger);
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 0.95rem;
+    }
+
+    .demo-presets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .demo-chip {
+      background: #21262d;
+      border: 1px solid var(--card-border);
+      color: #8b949e;
+      font-size: 0.8rem;
+      padding: 4px 10px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .demo-chip:hover {
+      color: var(--text-bright);
+      border-color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Binary Calculator</h1>
+      <p>Interactive Binary Addition, Subtraction, Multiplication & Long Division</p>
+    </header>
+
+    <div class="card">
+      <div id="errorBox" class="error-box"></div>
+
+      <div class="form-group">
+        <div class="label-row">
+          <label for="binA">Binary Number A (First Operand)</label>
+          <span id="decBadgeA" class="dec-badge">Dec: 0</span>
+        </div>
+        <div class="input-row">
+          <input type="text" id="binA" placeholder="e.g. 1101" autofocus />
+          <button class="quick-btn" onclick="appendBit('binA', '0')">0</button>
+          <button class="quick-btn" onclick="appendBit('binA', '1')">1</button>
+          <button class="quick-btn" onclick="backspace('binA')">&larr;</button>
+        </div>
+      </div>
+
+      <div class="ops-grid">
+        <button class="op-btn active" data-op="+" onclick="selectOp('+')">
+          <span>+</span>
+          <small>Addition</small>
+        </button>
+        <button class="op-btn" data-op="-" onclick="selectOp('-')">
+          <span>-</span>
+          <small>Subtraction</small>
+        </button>
+        <button class="op-btn" data-op="*" onclick="selectOp('*')">
+          <span>&times;</span>
+          <small>Multiply</small>
+        </button>
+        <button class="op-btn" data-op="/" onclick="selectOp('/')">
+          <span>&divide;</span>
+          <small>Division</small>
+        </button>
+      </div>
+
+      <div class="form-group">
+        <div class="label-row">
+          <label for="binB">Binary Number B (Second Operand)</label>
+          <span id="decBadgeB" class="dec-badge">Dec: 0</span>
+        </div>
+        <div class="input-row">
+          <input type="text" id="binB" placeholder="e.g. 1011" />
+          <button class="quick-btn" onclick="appendBit('binB', '0')">0</button>
+          <button class="quick-btn" onclick="appendBit('binB', '1')">1</button>
+          <button class="quick-btn" onclick="backspace('binB')">&larr;</button>
+        </div>
+      </div>
+
+      <div class="calc-actions">
+        <button class="btn-calc" onclick="calculate()">Calculate</button>
+        <button class="btn-clear" onclick="clearAll()">Clear</button>
+      </div>
+
+      <div class="demo-presets">
+        <span style="font-size: 0.8rem; color: #8b949e; align-self: center;">Try examples:</span>
+        <span class="demo-chip" onclick="loadExample('1101', '+', '1011')">1101 + 1011 (13+11)</span>
+        <span class="demo-chip" onclick="loadExample('11001', '-', '1010')">11001 - 1010 (25-10)</span>
+        <span class="demo-chip" onclick="loadExample('1011', '*', '101')">1011 &times; 101 (11&times;5)</span>
+        <span class="demo-chip" onclick="loadExample('1101', '/', '10')">1101 &divide; 10 (13&divide;2)</span>
+      </div>
+    </div>
+
+    <div id="resultsCard" class="card results-card">
+      <div class="res-header">
+        <h2 id="resTitle">Calculation Result</h2>
+        <span id="resDecBadge" class="dec-badge"></span>
+      </div>
+
+      <pre id="resDisplay" class="res-main"></pre>
+
+      <div class="steps-section">
+        <h3>Step-by-Step Calculation</h3>
+        <ul id="stepsList" class="steps-list"></ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentOp = "+";
+
+    const binAInput = document.getElementById("binA");
+    const binBInput = document.getElementById("binB");
+    const decBadgeA = document.getElementById("decBadgeA");
+    const decBadgeB = document.getElementById("decBadgeB");
+    const errorBox = document.getElementById("errorBox");
+    const resultsCard = document.getElementById("resultsCard");
+    const resDisplay = document.getElementById("resDisplay");
+    const resTitle = document.getElementById("resTitle");
+    const resDecBadge = document.getElementById("resDecBadge");
+    const stepsList = document.getElementById("stepsList");
+
+    binAInput.addEventListener("input", () => syncDecimal(binAInput, decBadgeA));
+    binBInput.addEventListener("input", () => syncDecimal(binBInput, decBadgeB));
+
+    function appendBit(inputId, bit) {
+      const el = document.getElementById(inputId);
+      el.value += bit;
+      el.dispatchEvent(new Event("input"));
+    }
+
+    function backspace(inputId) {
+      const el = document.getElementById(inputId);
+      el.value = el.value.slice(0, -1);
+      el.dispatchEvent(new Event("input"));
+    }
+
+    function cleanBin(str) {
+      const clean = str.trim().toLowerCase().replace(/^0b/, "");
+      if (!clean) return "";
+      if (!/^[01]+$/.test(clean)) return null;
+      const stripped = clean.replace(/^0+/, "");
+      return stripped ? stripped : "0";
+    }
+
+    function syncDecimal(inputEl, badgeEl) {
+      const cleaned = cleanBin(inputEl.value);
+      if (cleaned === null) {
+        badgeEl.textContent = "Invalid binary!";
+        badgeEl.style.color = "var(--danger)";
+      } else if (cleaned === "") {
+        badgeEl.textContent = "Dec: 0";
+        badgeEl.style.color = "var(--accent)";
+      } else {
+        badgeEl.textContent = `Dec: ${parseInt(cleaned, 2)}`;
+        badgeEl.style.color = "var(--accent)";
+      }
+    }
+
+    function selectOp(op) {
+      currentOp = op;
+      document.querySelectorAll(".op-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.getAttribute("data-op") === op);
+      });
+      calculate();
+    }
+
+    function showError(msg) {
+      errorBox.textContent = msg;
+      errorBox.style.display = "block";
+      resultsCard.style.display = "none";
+    }
+
+    function clearError() {
+      errorBox.textContent = "";
+      errorBox.style.display = "none";
+    }
+
+    function clearAll() {
+      binAInput.value = "";
+      binBInput.value = "";
+      syncDecimal(binAInput, decBadgeA);
+      syncDecimal(binBInput, decBadgeB);
+      resultsCard.style.display = "none";
+      clearError();
+    }
+
+    function loadExample(a, op, b) {
+      binAInput.value = a;
+      binBInput.value = b;
+      syncDecimal(binAInput, decBadgeA);
+      syncDecimal(binBInput, decBadgeB);
+      selectOp(op);
+    }
+
+    function calculate() {
+      clearError();
+      const a = cleanBin(binAInput.value);
+      const b = cleanBin(binBInput.value);
+
+      if (a === null || b === null) {
+        showError("Please enter valid binary digits (only 0 and 1).");
+        return;
+      }
+      if (a === "" || b === "") {
+        return; // waiting for full input
+      }
+
+      try {
+        if (currentOp === "+") doAddition(a, b);
+        else if (currentOp === "-") doSubtraction(a, b);
+        else if (currentOp === "*") doMultiplication(a, b);
+        else if (currentOp === "/") doDivision(a, b);
+      } catch (err) {
+        showError(err.message);
+      }
+    }
+
+    function doAddition(a, b) {
+      const decA = parseInt(a, 2);
+      const decB = parseInt(b, 2);
+      const maxLen = Math.max(a.length, b.length);
+      const padA = a.padStart(maxLen, "0");
+      const padB = b.padStart(maxLen, "0");
+
+      let carry = 0;
+      let resBits = [];
+      let carries = [];
+      let steps = [];
+
+      for (let i = maxLen - 1; i >= 0; i--) {
+        const bitA = parseInt(padA[i]);
+        const bitB = parseInt(padB[i]);
+        const total = bitA + bitB + carry;
+        const outBit = total % 2;
+        const nextCarry = Math.floor(total / 2);
+
+        steps.push(`Col ${maxLen - 1 - i}: ${bitA} + ${bitB} + carry(${carry}) = ${total} -> bit ${outBit}, carry ${nextCarry}`);
+        resBits.push(outBit);
+        carries.push(carry);
+        carry = nextCarry;
+      }
+
+      if (carry) {
+        resBits.push(carry);
+        steps.push(`Final carry-out: ${carry}`);
+      }
+
+      resBits.reverse();
+      const resStr = resBits.join("").replace(/^0+/, "") || "0";
+      const carryLine = carry + carries.reverse().join("");
+
+      const padWidth = Math.max(padA.length, resStr.length, carryLine.length) + 2;
+      const display = [
+        `  Carries:  ${carryLine.padStart(padWidth)}`,
+        `            ${padA.padStart(padWidth)}   (${decA})`,
+        `          + ${padB.padStart(padWidth)}   (${decB})`,
+        `          ${"-".repeat(padWidth + 2)}`,
+        `  Result:   ${resStr.padStart(padWidth)}   (${decA + decB})`
+      ].join("\n");
+
+      renderOutput("Binary Addition (+)", `Result: ${decA + decB}`, display, steps);
+    }
+
+    function doSubtraction(a, b) {
+      const decA = parseInt(a, 2);
+      const decB = parseInt(b, 2);
+      const isNegative = decA < decB;
+
+      const top = isNegative ? b : a;
+      const bottom = isNegative ? a : b;
+      const maxLen = Math.max(top.length, bottom.length);
+      const padTop = top.padStart(maxLen, "0");
+      const padBottom = bottom.padStart(maxLen, "0");
+
+      let topDigits = padTop.split("").map(Number);
+      let bottomDigits = padBottom.split("").map(Number);
+      let resBits = [];
+      let borrows = new Array(maxLen).fill(0);
+      let steps = [];
+
+      for (let i = maxLen - 1; i >= 0; i--) {
+        let t = topDigits[i];
+        let bVal = bottomDigits[i];
+
+        if (t < bVal) {
+          let borrowCol = i - 1;
+          while (borrowCol >= 0 && topDigits[borrowCol] === 0) {
+            borrowCol--;
+          }
+          if (borrowCol >= 0) {
+            topDigits[borrowCol] -= 1;
+            for (let k = borrowCol + 1; k < i; k++) {
+              topDigits[k] += 1;
+            }
+            topDigits[i] += 2;
+            borrows[i] = 1;
+            steps.push(`Col ${maxLen - 1 - i}: Borrowed from Col ${maxLen - 1 - borrowCol}`);
+          }
+        }
+
+        const diff = topDigits[i] - bVal;
+        resBits.push(diff);
+        steps.push(`Col ${maxLen - 1 - i}: ${topDigits[i]} - ${bVal} = ${diff}`);
+      }
+
+      resBits.reverse();
+      let resStr = resBits.join("").replace(/^0+/, "") || "0";
+      if (isNegative && resStr !== "0") resStr = `-${resStr}`;
+
+      const padWidth = Math.max(padTop.length, resStr.length) + 2;
+      const borrowLine = borrows.join("");
+      const display = [
+        isNegative ? `  Note: A < B, calculated -(${b} - ${a})` : "",
+        `  Borrows:  ${borrowLine.padStart(padWidth)}`,
+        `            ${padTop.padStart(padWidth)}   (${isNegative ? decB : decA})`,
+        `          - ${padBottom.padStart(padWidth)}   (${isNegative ? decA : decB})`,
+        `          ${"-".repeat(padWidth + 2)}`,
+        `  Result:   ${resStr.padStart(padWidth)}   (${decA - decB})`
+      ].filter(Boolean).join("\n");
+
+      renderOutput("Binary Subtraction (-)", `Result: ${decA - decB}`, display, steps);
+    }
+
+    function doMultiplication(a, b) {
+      const decA = parseInt(a, 2);
+      const decB = parseInt(b, 2);
+      const prodDec = decA * decB;
+      const prodBin = prodDec.toString(2);
+
+      let steps = [];
+      let pps = [];
+
+      const reversedB = b.split("").reverse();
+      for (let shift = 0; shift < reversedB.length; shift++) {
+        const bit = reversedB[shift];
+        const val = bit === "1" ? a + "0".repeat(shift) : "0".repeat(a.length + shift);
+        pps.push({ shift, bit, val });
+        steps.push(`Bit ${shift} = '${bit}': Add ${bit === "1" ? a : "0"} shifted left by ${shift} -> ${val}`);
+      }
+
+      const padWidth = Math.max(a.length, b.length, prodBin.length) + 4;
+      const lines = [
+        `            ${a.padStart(padWidth)}   (${decA})`,
+        `          x ${b.padStart(padWidth)}   (${decB})`,
+        `          ${"-".repeat(padWidth + 2)}`,
+        `  Partial Products:`
+      ];
+
+      pps.forEach(pp => {
+        lines.push(`          + ${pp.val.padStart(padWidth)}   [bit ${pp.shift} = '${pp.bit}']`);
+      });
+
+      lines.push(`          ${"=".repeat(padWidth + 2)}`);
+      lines.push(`  Product:  ${prodBin.padStart(padWidth)}   (${prodDec})`);
+
+      renderOutput("Binary Multiplication (*)", `Result: ${prodDec}`, lines.join("\n"), steps);
+    }
+
+    function doDivision(a, b) {
+      const decA = parseInt(a, 2);
+      const decB = parseInt(b, 2);
+
+      if (decB === 0) {
+        throw new Error("Division by zero (0) is undefined in mathematics.");
+      }
+
+      let quotientBits = [];
+      let currentRemainder = 0;
+      let steps = [];
+
+      for (let idx = 0; idx < a.length; idx++) {
+        const bit = parseInt(a[idx]);
+        currentRemainder = (currentRemainder << 1) | bit;
+
+        if (currentRemainder >= decB) {
+          const newRemainder = currentRemainder - decB;
+          steps.push(`Step ${idx + 1} [bring down '${bit}']: current ${currentRemainder.toString(2)} >= ${b} -> Q-bit '1', new rem = ${newRemainder.toString(2)}`);
+          quotientBits.push("1");
+          currentRemainder = newRemainder;
+        } else {
+          steps.push(`Step ${idx + 1} [bring down '${bit}']: current ${currentRemainder.toString(2)} < ${b} -> Q-bit '0', rem = ${currentRemainder.toString(2)}`);
+          quotientBits.push("0");
+        }
+      }
+
+      const qStr = quotientBits.join("").replace(/^0+/, "") || "0";
+      const rStr = currentRemainder.toString(2);
+
+      const display = [
+        `  Dividend:  ${a} (${decA})`,
+        `  Divisor:   ${b} (${decB})`,
+        `  Quotient:  ${qStr} (${parseInt(qStr, 2)})`,
+        `  Remainder: ${rStr} (${currentRemainder})`,
+        `  Equation:  ${a} = (${b} * ${qStr}) + ${rStr}`
+      ].join("\n");
+
+      renderOutput("Binary Division (/)", `Quotient: ${parseInt(qStr, 2)}, Remainder: ${currentRemainder}`, display, steps);
+    }
+
+    function renderOutput(title, badge, mainText, steps) {
+      resTitle.textContent = title;
+      resDecBadge.textContent = badge;
+      resDisplay.textContent = mainText;
+
+      stepsList.innerHTML = "";
+      steps.forEach(s => {
+        const li = document.createElement("li");
+        li.textContent = s;
+        stepsList.appendChild(li);
+      });
+
+      resultsCard.style.display = "block";
+    }
+
+    // Default sample load
+    loadExample("1101", "+", "1011");
+  </script>
+</body>
+</html>
+
